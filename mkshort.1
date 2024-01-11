@@ -1,0 +1,104 @@
+.Dd $Mdocdate$
+.Dt mkshort 1
+.Os mkshort 1.0
+.Sh NAME
+.Nm mkshort
+.Nd make short 1.0
+.Sh SYNOPSIS
+.Nm
+.Bk -words
+.Op Fl help
+.Ek
+.Nm
+.Bk -words
+.Op Fl b Ar padding-background-color
+.Op Fl c Ar latex-cmd
+.Op Fl d Ar cache-directory
+.Op Fl e Ar compiled-images-extension
+.Op Fl f Ar output-pixel-format
+.Op Fl h Ar output-height
+.Op Fl i Ar text-indentation
+.Op Fl l Ar /path/to/sh
+.Op Fl m
+.Op Fl p Ar /path/to/template.tex
+.Op Fl r Ar output-framerate
+.Op Fl s Ar sleeping-time
+.Op Fl t Ar latex-template
+.Op Fl w Ar output-width
+.Op Fl x
+.Op Fl y
+.Ar cmd
+.Op Ar args ...
+.Sh DESCRIPTION
+.Nm
+can be used to create short video from a series of images.
+A series of text can be overlayed on each image. The text
+is considered to be
+.Xr latex 1
+code: it's compiled, exported to an image via
+.Xr magick 1
+(previously known as
+.Xr convert 1
+from
+.Xr ImageMagick 1 )
+.Pp
+.Nm
+reads a '.short' file, compile the overlay texts
+to images, generates a
+.Xr ffmpeg 1
+command, and  and eventually runs this command.
+.Sh .SHORT FILE FORMAT
+An example is provided in the next section.
+.Pp
+Each new image is indicated by a line starting
+with a colon followed by the path to this image.
+.Pp
+A new text overlay can be specified for the current image
+by lines which are not indented as specified by
+.Fl i
+nor starting with a colon. Those lines must contain at
+most two entries:
+.Bl -enum
+.It
+A waiting/sleeping time (float, seconds). By default, the
+it is relative to when the corresponding image starts to
+appear, but if it starts with a "+", it will be relative
+to the end of the previous overlay.
+.It
+The duration (float, seconds) during which the text
+overlay should be displayed.
+.El
+.Pp
+Lines indented as specified by
+.Fl i
+Are concatenated until a new image or a new text
+overlay is found. The indentation is obviously removed.
+The end-of-line markers are kept.
+.Pp
+Lines starting with a '#' are ignored. No indentation
+is allowed; end-of-line comments are not supported.
+.Pp
+Empty lines are ignored.
+
+.Sh EXAMPLE
+Here is an abridged '.short' file:
+
+.Bd -literal -offset indent
+:virgin-of-the-rocks-paris.jpg
+0.7 3.5
+	Here is what seems \\\\
+	to be \\\\
+	a little-known fact \\\\
++0.7 3
+	About this famous \\\\
+	Leonardo painting, \\\\
++0.7 3
+	...
+:virgin-of-the-rocks-london.jpg
++0.7 4
+	This also holds in the \\\\
+	"London" version of the \\\\
+	painting \\\\
++0.7 2
+	...
+.Ed

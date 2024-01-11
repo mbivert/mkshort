@@ -1,0 +1,15 @@
+\documentclass[preview,convert={density=600,outext=.png,command=\unexpanded{ {\convertexe\space -density \density\space\infile\space \ifx\size\empty\else -resize \size\fi\space -quality 90 -trim +repage -background "rgba(50,50,50,0.5)" -bordercolor "rgba(50,50,50,0.5)" -border 25 -flatten \outfile} } }]{standalone}
+% Requires lualatex
+\usepackage{emoji}
+
+\usepackage{xcolor}
+\usepackage{amsmath}
+\begin{document}
+
+\begin{center}
+\textcolor{white}{ 
+But I have not found it \\
+mentioned anywhere, \\
+so far \\ }
+\end{center}
+\end{document}
