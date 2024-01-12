@@ -3,25 +3,35 @@
 a diaporama of images with overlayed text, via [ffmpeg(1)][ffmpeg-doc].
 The input is a text file like this one:
 
-	:virgin-of-the-rocks-paris.jpg
-	0.7 3.5
-		Here is what seems \\
-		to be \\
-		a little-known fact \\
-	+0.7 3
-		About this famous \\
-		Leonardo painting, \\
+```
+:virgin-of-the-rocks-paris.jpg
+0.7 3.5
+	Here is what seems \\
+	to be \\
+	a little-known fact \\
 
-	...
+...
 
-	:virgin-of-the-rocks-london.jpg
-	+0.7 4
-		This also holds in the \\
-		"London" version of the \\
-		painting \\
-	+0.7 2
++0.7 3
+	Jesus, the \\
+	bottom right child \\
++0.7 5
+	Is the only one \\
+	looking at the \\
+	\textit{Source of Light} \\
+	\emoji{face-in-clouds} \\
 
-![Sample image ](https://github.com/mbivert/mkshort/blob/master/virgin-of-the-sample.jpg)
+...
+
+:virgin-of-the-rocks-london.jpg
++0.7 4
+	This also holds in the \\
+	"London" version of the \\
+	painting \\
++0.7 2
+```
+
+![Sample image](https://github.com/mbivert/mkshort/blob/master/virgin-of-the-rocks-sample.jpg?raw=true)
 
 An sample output is available
 [here](https://www.ganjingworld.com/shorts/1gemffsenl01fJ8I4DxARv8qi1k81c)
@@ -29,7 +39,7 @@ or [here](https://youtube.com/shorts/d4iW-_-ETb4);
 the [audio](http://www.baroquemusic.org/19Web.html) has been
 manually added with:
 ```
-ffmpeg -y \
+$ ffmpeg -y \
 	-i virgin-of-the-rocks.mp4 \
 	-i $MUSIC/baroquemusic.com/BMC19T1VivaldiSeasonsSpring.mp3 \
 	-map 0:v -map 1:a -c:v copy -shortest virgin-of-the-rocks-audio.mp4
@@ -56,6 +66,7 @@ Available targets:
 	             build (a bit slow) and play the example.
 	install    : install to /bin/ andqq /usr/share/man/man1/
 	uninstall  : remove installed files
+
 $ mkshort -help
 Usage of mkshort:
   -b string

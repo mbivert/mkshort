@@ -2,8 +2,9 @@ package main
 
 /*
  * The .short files are parsed via ':/^func parse\(',
- * to a few arrays. Those arrays can then be compiled
- * to a ffmpeg(1) command (string) via ':/func compile\('
+ * and transformed to a few arrays. Those arrays can
+ * then be compiled to a ffmpeg(1) command (string) via
+ * ':/func compile\('.
  *
  * The parsing is implemented with a basic state machine;
  * the input .short file is processed line per line.
@@ -69,9 +70,6 @@ var textTmpl = `\documentclass[preview,convert={density=600,outext=.png,command=
 \end{center}
 \end{document}
 `
-
-// TODO
-var autoDuration = false
 
 var S State = State{
 	faststart   :     true,
