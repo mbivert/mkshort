@@ -31,9 +31,15 @@ The input is a text file like this one:
 +0.7 2
 ```
 
-![Sample image](https://github.com/mbivert/mkshort/blob/master/virgin-of-the-rocks-sample.jpg?raw=true)
+<img src="https://github.com/mbivert/mkshort/blob/master/virgin-of-the-rocks.gif?raw=true" width="512" >
 
-An sample output is available
+The previous ``.gif`` was generated with [ffmpeg(1)][ffmpeg-doc] from
+the ``.mp4``:
+```
+$ ffmpeg -y -i virgin-of-the-rocks.mp4 virgin-of-the-rocks-audio.gif
+```
+
+A video with sound is available
 [here](https://www.ganjingworld.com/shorts/1gemffsenl01fJ8I4DxARv8qi1k81c)
 or [here](https://youtube.com/shorts/d4iW-_-ETb4);
 the [audio](http://www.baroquemusic.org/19Web.html) has been

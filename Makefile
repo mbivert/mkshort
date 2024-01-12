@@ -43,13 +43,18 @@ virgin-of-the-rocks.mp4: virgin-of-the-rocks.short
 	@echo Building $@...
 	@go run mkshort.go -d .cache virgin-of-the-rocks.mp4 virgin-of-the-rocks.short
 
+virgin-of-the-rocks.gif: virgin-of-the-rocks.mp4
+	@echo Building $@...
+	@ffmpeg -y -i $^ $@
+
 .PHONY: example
 example:                               \
 		mkshort                        \
 		virgin-of-the-rocks-paris.jpg  \
 		virgin-of-the-rocks-london.jpg \
 		virgin-of-the-rocks.cmd        \
-		virgin-of-the-rocks.mp4
+		virgin-of-the-rocks.mp4        \
+		virgin-of-the-rocks.gif
 	@echo Generated command:
 	@cat virgin-of-the-rocks.cmd
 	@echo Playing virgin-of-the-rocks.mp4...
