@@ -4,7 +4,8 @@ package main
  * The .short files are parsed via ':/^func parse\(',
  * and transformed to a few arrays. Those arrays can
  * then be compiled to a ffmpeg(1) command (string) via
- * ':/func compile\('.
+ * ':/func compile\('. It can then be executed via
+ * ':/func run\('.
  *
  * The parsing is implemented with a basic state machine;
  * the input .short file is processed line per line.
@@ -80,12 +81,12 @@ var S State = State{
 	framerate   :     30,
 	defaultWait :     0.8,
 	indent      :     "\t",
-	input       :     nil, // computed in ':/^func init\('
+	input       :     nil, // computed in ':/^func doInit\('
 	output      :     "reel.mp4",
 	pixFmt      :     "yuv420p",
 	cacheDir    :     filepath.Join(os.Getenv("HOME"), ".mkshort"),
 	textTmpl    :     textTmpl,
-	tmpl        :     nil, // computed in ':/^func init\('
+	tmpl        :     nil, // computed in ':/^func doInit\('
 	latexCmd    :     "lualatex",
 	dryRun      :     false,
 	binsh       :     "/bin/sh",
@@ -123,7 +124,7 @@ func doCompileText(s string, S *State) (string, error) {
 		return "", err
 	}
 
-	// TODO: quirk (-shell-escape; see that when we flag.Parse())
+	// TODO: we shouldn't assume latexCmd to be a latexCmd
 	cmd := exec.Command(S.latexCmd, "-shell-escape", tex)
 	cmd.Dir = S.cacheDir
 
@@ -517,6 +518,29 @@ func parseAndCompile(S *State) (string, error) {
 	return compile(ins, scales, overs, concats, S), nil
 }
 
+func run(scmd string, s *State) error {
+	// Write scmd to the stdin of a /bin/sh.
+	cmd := exec.Command(S.binsh)
+
+	// Forward child's stdout/stderr to parent
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	// Grab child's stdin
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return err
+	}
+
+	// echo "$scmd" | /bin/sh
+	go func() {
+		defer stdin.Close()
+		io.WriteString(stdin, scmd)
+	}()
+
+	return cmd.Run()
+}
+
 // Essentially the entry point.
 func parseCompileAndMaybeRun(S *State) error {
 	scmd, err := parseAndCompile(S)
@@ -529,25 +553,7 @@ func parseCompileAndMaybeRun(S *State) error {
 		return nil
 	}
 
-	// Write scmd to the stdin of a /bin/sh.
-	cmd := exec.Command(S.binsh)
-
-	// Forward child's stdout/stderr to parent
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	// Grab child's stdin
-    stdin, err := cmd.StdinPipe()
-    if err != nil {
-		return err
-    }
-
-    go func() {
-        defer stdin.Close()
-        io.WriteString(stdin, scmd)
-    }()
-
-	return cmd.Run()
+	return run(scmd, S)
 }
 
 // For the most part, allows the global State variable S
