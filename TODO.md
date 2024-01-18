@@ -1,22 +1,3 @@
-## "1 frame" bug @bug
-There's one (small) remaining issue for which I have no (clean) solution yet:
-consider the following overlay chain:
-
-	[0:v] [1:v] overlay=x=(W-w)/2:y=(H-h)/2:enable='between(t,0.70,4.20)' [in0,1];
-	[in0,1] [2:v] overlay=x=(W-w)/2:y=(H-h)/2:enable='between(t,4.90,7.90)' [in0,2];
-	[in0,2] [3:v] overlay=x=(W-w)/2:y=(H-h)/2:enable='between(t,8.60,11.60)' [in0,3];
-	...
-
-Then, for about a frame, `[1:v]` is displayed at the beginning of the stream,
-before being hidden for `0.7` and shown until `4.20` as it should. I haven't
-found (clean) ways to get rid of this one-frame display; surprisingly, weird
-manipulations like this one don't help:
-
-	[0:v] split, overlay=enable='between(t,0,0.7)' [in0];
-	[in0] [1:v] overlay=x=(W-w)/2:y=(H-h)/2:enable='between(t,0.70,4.20)' [in0,1];
-	[in0,1] [2:v] overlay=x=(W-w)/2:y=(H-h)/2:enable='between(t,4.90,7.90)' [in0,2];
-	...
-
 ## drawtext mode @feature
 We could, as it was done in the prototype, rely on ffmpeg's drawtext mode
 instead of LaTeX+magick.

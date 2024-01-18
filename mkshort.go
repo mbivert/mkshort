@@ -269,6 +269,17 @@ func parse(S *State) (
 		return len(ins)-1
 	}
 
+	// For some unknown reason, if we use addInput() to register
+	// the overlay, the overlay is displayed for about 1 frame whenever
+	// we load a (main) image.
+	//
+	// This was okayish when we had two images in 60s, but it's much
+	// more annoying when you change image every 5sec or so.
+	addBasicInput := func(p string) int {
+		ins = append(ins, fmt.Sprintf(`-i "%s"`, p))
+		return len(ins)-1
+	}
+
 	addImg := func() { addInput(S.framerate, calcDuration(), img) }
 
 	// Creates and registers a scale filter to scales (it's
@@ -309,7 +320,7 @@ func parse(S *State) (
 			// New input file for this overlay; grab the
 			// corresponding entry stream number: it's
 			// this one we'll want to overlay.
-			n := addInput(1, t.Duration, t.Path)
+			n := addBasicInput(t.Path)
 
 			// Add overlay & chain;
 			from = addOverlay(from,
