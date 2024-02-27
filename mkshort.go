@@ -57,6 +57,8 @@ type State struct {
 	delimRight  string
 	delimLeft   string
 
+	always      bool
+
 	// "Internal" stuff (.short file format)
 	imgPrefix   string
 	audioPrefix string
@@ -117,6 +119,8 @@ var S State = State{
 
 	delimLeft   :    "[[",
 	delimRight  :    "]]",
+
+	always      :    false,
 
 	imgPrefix   :     ":",
 	audioPrefix :     "@",
@@ -193,7 +197,7 @@ func compileText(raw string, t *Text, S *State) (*Text, error) {
 		return nil, err
 	}
 	t.Path = getCached(s.String(), S)
-	if t.Path == "" {
+	if t.Path == "" || S.always {
 		t.Path, err = doCompileText(s.String(), S)
 	}
 	return t, err
@@ -708,6 +712,7 @@ func doInit() {
 	flag.StringVar(&S.textImgExt, "e", S.textImgExt, "extension for the compiled text images")
 
 	// TODO? imgPrefix, headerSep, delimRight, delimLeft
+	flag.BoolVar(&S.always, "B", S.always, "Force .tex recompilation")
 
 	flag.Parse()
 
