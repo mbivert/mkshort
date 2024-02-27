@@ -14,6 +14,9 @@ var D = filepath.Join(os.Getenv("PWD"), ".cache")
 
 // The default template './mkshort.go:/^var textTmpl' has change, and will
 // change in the future. This should be sufficient for tests.
+//
+// NOTE/TODO: the template delimiters were changed; this still works but we
+// should rely on the S.delim* here instead of assuming an implicit value.
 var T = `\documentclass[preview,convert={density=600,outext=.png,command=\unexpanded{ {\convertexe\space -density \density\space\infile\space \ifx\size\empty\else -resize \size\fi\space -quality 90 -trim +repage -background "rgba(50,50,50,0.5)" -bordercolor "rgba(50,50,50,0.5)" -border 25 -flatten \outfile} } }]{standalone}
 % Requires lualatex
 \usepackage{emoji}

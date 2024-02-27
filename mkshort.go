@@ -53,6 +53,10 @@ type State struct {
 	binsh       string
 	textImgExt  string
 
+	// TODO: CLI flags
+	delimRight  string
+	delimLeft   string
+
 	// "Internal" stuff (.short file format)
 	imgPrefix   string
 	audioPrefix string
@@ -69,7 +73,8 @@ var textTmpl = `\documentclass[preview,convert={density=600,outext=.png,command=
 \usepackage{babel}
 \usepackage{graphicx}
 
-%\graphicspath{ {./} }
+% beware of the extra spaces here
+\graphicspath{ {[[ .path ]]} }
 
 \babelprovide{chinese}
 
@@ -85,7 +90,7 @@ var textTmpl = `\documentclass[preview,convert={density=600,outext=.png,command=
 \begin{document}
 
 \begin{center}
-\textcolor{white}{ {{ .text }} }
+\textcolor{white}{[[ .text ]]}
 \end{center}
 \end{document}
 `
@@ -109,6 +114,9 @@ var S State = State{
 	dryRun      :     false,
 	binsh       :     "/bin/sh",
 	textImgExt  :    ".png",
+
+	delimLeft   :    "[[",
+	delimRight  :    "]]",
 
 	imgPrefix   :     ":",
 	audioPrefix :     "@",
@@ -146,7 +154,8 @@ func doCompileText(s string, S *State) (string, error) {
 	// TODO: we shouldn't assume latexCmd to be a latexCmd
 	cmd := exec.Command(S.latexCmd, "-shell-escape", tex)
 
-	// XXX/TODO: if we do this, then e.g. \graphicspath{ { ./ } } is broken
+	// NOTE: if we do this, then e.g. \graphicspath{ { ./ } } is broken;
+	// "." (aka, PWD) is now provided to the template via .path anyway.
 	cmd.Dir = S.cacheDir
 
 	// TODO: do something with output
@@ -177,7 +186,10 @@ func compileText(raw string, t *Text, S *State) (*Text, error) {
 		return t, nil
 	}
 
-	if err = S.tmpl.Execute(&s, map[string]any{ "text" : raw }); err != nil {
+	if err = S.tmpl.Execute(&s, map[string]any{
+		"text" : raw,
+		"path" : os.Getenv("PWD") + "/",
+	}); err != nil {
 		return nil, err
 	}
 	t.Path = getCached(s.String(), S)
@@ -573,7 +585,9 @@ func compile(ins, scales, overs, concats []string, audio string, S *State) strin
 		for _, x := range concats {
 			cmd += x + " "
 		}
+
 		cmd += fmt.Sprintf("concat=n=%d:v=1:a=0:unsafe=1 [v]", len(concats))
+
 		if audio != "" {
 			cmd += fmt.Sprintf(";\n\n\t\t%s", audio)
 		}
@@ -693,15 +707,21 @@ func doInit() {
 	flag.StringVar(&S.binsh, "l", S.binsh, "shell to run the compiled ffmpeg(1) command")
 	flag.StringVar(&S.textImgExt, "e", S.textImgExt, "extension for the compiled text images")
 
-	// TODO? imgPrefix, headerSep
+	// TODO? imgPrefix, headerSep, delimRight, delimLeft
 
 	flag.Parse()
 
 	// No template file => use the string template
 	if _, err := os.Stat(*tmplFn); errors.Is(err, os.ErrNotExist) {
-		S.tmpl = template.Must(template.New("").Parse(S.textTmpl))
+		S.tmpl = template.Must(template.New("").Delims(
+			S.delimLeft,
+			S.delimRight,
+		).Parse(S.textTmpl))
 	} else {
-		S.tmpl = template.Must(template.New("").ParseFiles(*tmplFn))
+		S.tmpl = template.Must(template.New("").Delims(
+			S.delimLeft,
+			S.delimRight,
+		).ParseFiles(*tmplFn))
 	}
 
 	// Expected to exists later
