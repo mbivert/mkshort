@@ -12,6 +12,22 @@ import (
 // otherwise guaranteed by 'mkshort.go:/^func doInit\('
 var D = filepath.Join(os.Getenv("PWD"), ".cache")
 
+// The default template './mkshort.go:/^var textTmpl' has change, and will
+// change in the future. This should be sufficient for tests.
+var T = `\documentclass[preview,convert={density=600,outext=.png,command=\unexpanded{ {\convertexe\space -density \density\space\infile\space \ifx\size\empty\else -resize \size\fi\space -quality 90 -trim +repage -background "rgba(50,50,50,0.5)" -bordercolor "rgba(50,50,50,0.5)" -border 25 -flatten \outfile} } }]{standalone}
+% Requires lualatex
+\usepackage{emoji}
+
+\usepackage{xcolor}
+\usepackage{amsmath}
+\begin{document}
+
+\begin{center}
+\textcolor{white}{ {{ .text }} }
+\end{center}
+\end{document}
+`
+
 func TestCompile(t *testing.T) {
 	doTests(t, []test{
 		// Generated command might be invalid in some cases
@@ -35,7 +51,7 @@ func TestCompile(t *testing.T) {
 					output      : "",
 					pixFmt      : "",
 					cacheDir    : "",
-					textTmpl    : "",
+					textTmpl    : T,
 					tmpl        : nil,
 					latexCmd    : "",
 					dryRun      : false,
@@ -73,7 +89,7 @@ func TestCompile(t *testing.T) {
 					output      : "",
 					pixFmt      : "",
 					cacheDir    : "",
-					textTmpl    : "",
+					textTmpl    : T,
 					tmpl        : nil,
 					latexCmd    : "",
 					dryRun      : false,
@@ -111,7 +127,7 @@ func TestCompile(t *testing.T) {
 					output      : "reel.mp4",
 					pixFmt      : "yuv420p",
 					cacheDir    : "",
-					textTmpl    : "",
+					textTmpl    : T,
 					tmpl        : nil,
 					latexCmd    : "",
 					dryRun      : false,
@@ -153,7 +169,7 @@ func TestCompile(t *testing.T) {
 					output      : "reel.mp4",
 					pixFmt      : "yuv420p",
 					cacheDir    : "",
-					textTmpl    : "",
+					textTmpl    : T,
 					tmpl        : nil,
 					latexCmd    : "",
 					dryRun      : false,
@@ -249,7 +265,7 @@ func TestParse(t *testing.T) {
 					output      : "reel.mp4",
 					pixFmt      : "yuv420p",
 					cacheDir    : "",
-					textTmpl    : "",
+					textTmpl    : T,
 					tmpl        : nil,
 					latexCmd    : "",
 					dryRun      : false,
@@ -284,7 +300,7 @@ func TestParse(t *testing.T) {
 					output      : "reel.mp4",
 					pixFmt      : "yuv420p",
 					cacheDir    : "",
-					textTmpl    : "",
+					textTmpl    : T,
 					tmpl        : nil,
 					latexCmd    : "",
 					dryRun      : false,
@@ -325,7 +341,7 @@ func TestParse(t *testing.T) {
 					output      : "reel.mp4",
 					pixFmt      : "yuv420p",
 					cacheDir    : "",
-					textTmpl    : "",
+					textTmpl    : T,
 					tmpl        : nil,
 					latexCmd    : "",
 					dryRun      : false,
@@ -371,7 +387,7 @@ func TestParse(t *testing.T) {
 					output      : "reel.mp4",
 					pixFmt      : "yuv420p",
 					cacheDir    : "",
-					textTmpl    : "",
+					textTmpl    : T,
 					tmpl        : nil,
 					latexCmd    : "",
 					dryRun      : false,
@@ -412,7 +428,7 @@ func TestParse(t *testing.T) {
 					output      : "reel.mp4",
 					pixFmt      : "yuv420p",
 					cacheDir    : "",
-					textTmpl    : "",
+					textTmpl    : T,
 					tmpl        : nil,
 					latexCmd    : "",
 					dryRun      : false,
@@ -458,8 +474,8 @@ func TestParse(t *testing.T) {
 					output      : "reel.mp4",
 					pixFmt      : "yuv420p",
 					cacheDir    : D,
-					textTmpl    : S.textTmpl, // './mkshort.go:/^var textTmpl'
-					tmpl        : template.Must(template.New("").Parse(S.textTmpl)),
+					textTmpl    : T,
+					tmpl        : template.Must(template.New("").Parse(T)),
 					latexCmd    : "lualatex",
 					dryRun      : false,
 					binsh       : "",
@@ -549,8 +565,8 @@ func TestParse(t *testing.T) {
 					output      : "reel.mp4",
 					pixFmt      : "yuv420p",
 					cacheDir    : D,
-					textTmpl    : S.textTmpl, // './mkshort.go:/^var textTmpl'
-					tmpl        : template.Must(template.New("").Parse(S.textTmpl)),
+					textTmpl    : T,
+					tmpl        : template.Must(template.New("").Parse(T)),
 					latexCmd    : "lualatex",
 					dryRun      : false,
 					binsh       : "",
@@ -697,8 +713,8 @@ func TestParseAndCompile(t *testing.T) {
 					output      : "reel.mp4",
 					pixFmt      : "yuv420p",
 					cacheDir    : D,
-					textTmpl    : S.textTmpl, // './mkshort.go:/^var textTmpl'
-					tmpl        : template.Must(template.New("").Parse(S.textTmpl)),
+					textTmpl    : T,
+					tmpl        : template.Must(template.New("").Parse(T)),
 					latexCmd    : "lualatex",
 					dryRun      : false,
 					binsh       : "",

@@ -64,6 +64,23 @@ var textTmpl = `\documentclass[preview,convert={density=600,outext=.png,command=
 
 \usepackage{xcolor}
 \usepackage{amsmath}
+
+\usepackage{babel}
+\usepackage{graphicx}
+
+%\graphicspath{ {./} }
+
+\babelprovide{chinese}
+
+% (shell)$ fc-list :lang=zh
+\babelfont[chinese]{rm}[Renderer=Harfbuzz]{HAN NOM A}
+
+\usepackage{tikz} % \pgfsetfillopacity
+
+\newcommand{\cn}[1]{\begin{otherlanguage}{chinese}#1\end{otherlanguage}}
+\newcommand{\cnc}[2]{\pgfsetfillopacity{0.8}\colorbox{gray}{%
+\textcolor{#2}{\pgfsetfillopacity{1}\cn{#1}}}}
+
 \begin{document}
 
 \begin{center}
@@ -126,6 +143,8 @@ func doCompileText(s string, S *State) (string, error) {
 
 	// TODO: we shouldn't assume latexCmd to be a latexCmd
 	cmd := exec.Command(S.latexCmd, "-shell-escape", tex)
+
+	// XXX/TODO: if we do this, then e.g. \graphicspath{ { ./ } } is broken
 	cmd.Dir = S.cacheDir
 
 	// TODO: do something with output
@@ -574,6 +593,7 @@ func parseCompileAndMaybeRun(S *State) error {
 func doInit() {
 	// ffmpeg -movflags faststart
 	flag.BoolVar(&S.faststart, "m", S.faststart, "Enable/disable faststart")
+
 	// ffmpeg -y
 	flag.BoolVar(&S.overwrite, "y", S.overwrite, "Allow automatic output overwrite")
 

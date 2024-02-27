@@ -28,8 +28,6 @@ output streams at once.
 
 ## complete man page
 
-## clean code
-
 ## bad file format @bugs
 test and fix e.g.
 ```
