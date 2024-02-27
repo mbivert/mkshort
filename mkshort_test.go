@@ -284,6 +284,42 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			"just comments",
+			parse,
+			[]any{
+				&State{
+					faststart   : false,
+					overwrite   : true,
+					width       : 0,
+					height      : 0,
+					framerate   : 30,
+					defaultWait : 0.8,
+					indent      : "\t",
+					input       : strings.NewReader(
+						"# hello, world\n#foo bar\n",
+					),
+					output      : "reel.mp4",
+					pixFmt      : "yuv420p",
+					cacheDir    : "",
+					textTmpl    : "",
+					tmpl        : nil,
+					latexCmd    : "",
+					dryRun      : false,
+					binsh       : "",
+					textImgExt  : ".png",
+					imgPrefix   : ":",
+					headerSep   : " ",
+				},
+			},
+			[]any{
+				[]string{},
+				[]string{},
+				[]string{},
+				[]string{},
+				nil,
+			},
+		},
+		{
 			"One image, no texts",
 			parse,
 			[]any{
@@ -517,13 +553,16 @@ func TestParse(t *testing.T) {
 					defaultWait : 0.8,
 					indent      : "\t",
 					input       : strings.NewReader(`
+# This is a comment; will be ignored
 :virgin-of-the-rocks-paris.jpg
 0.7 3.5
 	Here is what seems \\
 	to be \\
 	a little-known fact \\
+# Another comments
 +0.7 3
 	About this famous \\
+# Comments are okay anywhere as long as the line starts with a '#'
 	Leonardo painting, \\
 +0.7 3
 	« Virgin of the Rocks »: \\

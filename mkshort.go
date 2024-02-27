@@ -411,7 +411,6 @@ func parse(S *State) (
 		}
 
 		// Comments
-		// TODO: tests
 		if strings.HasPrefix(x, "#") {
 			continue
 		}
