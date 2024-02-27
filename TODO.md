@@ -6,7 +6,7 @@ instead of LaTeX+magick.
 Two decimals should be enough for our present purposes, but we
 may want to allow the precision to be configurable.
 
-## automatic duration computation @feature
+## automatic (text) duration computation @feature
 The fact that the text input is LaTeX may add some
 extra difficulties, but a basic implementation should
 be easy.
@@ -18,13 +18,6 @@ Find ways to move text around easily.
 
 ## sound effect @feature
 E.g. play a small sound everytime the text change.
-
-## audio track @feature
-For now, a global audio track can be added manually
-to the final stream, but we could allow it in here.
-We may want to be able to change the soundtrack
-as we go, and to generate both a silent and non-silent
-output streams at once.
 
 ## complete man page
 

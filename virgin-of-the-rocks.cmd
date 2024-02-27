@@ -1,17 +1,18 @@
 ffmpeg -y \
 	-r 30 -t 36.80 -loop 1 -i "virgin-of-the-rocks-paris.jpg" \
-	 -i "/home/mb/gits/mkshort/.cache/90ed2c0bdd3b03acdd5ac3a66e78983c197933eac4d771a64cdd353d7f12542d.png" \
-	 -i "/home/mb/gits/mkshort/.cache/0874052b84eaea473405843666c658223881605489935376624fed4601c3ab50.png" \
-	 -i "/home/mb/gits/mkshort/.cache/24292a73f7cf7157b6b62f4799931e9c8fca518208eeda4782c8bb75ef36a2dc.png" \
-	 -i "/home/mb/gits/mkshort/.cache/2b96a193886a1a0a329a24bcd3468f98f13cb337b26b4045e5843b5563252b47.png" \
-	 -i "/home/mb/gits/mkshort/.cache/23ac3136c67210652b5582c7847a47787f68f50e2288d4381b92d1607489e42d.png" \
-	 -i "/home/mb/gits/mkshort/.cache/9ec644c436c5e7a339ed857abc939e27b3f42362f21a62288e7c616ef4f3ce63.png" \
-	 -i "/home/mb/gits/mkshort/.cache/242215143f65b91164cfe12d9ba126b7fe52bf35eab7df8de227f1916e10e8b7.png" \
-	 -i "/home/mb/gits/mkshort/.cache/c9ed7cf3d1331df8d11fccf2d964fe221b1e037980e2346dd579604b94d9c53e.png" \
+	-i "/home/mb/gits/mkshort/.cache/5ab0aeb863fa30690ac886848568294f088112b3e214f1d76057b4813157ee92.png" \
+	-i "/home/mb/gits/mkshort/.cache/4b2f909c63713285cbc12433a7825417f67af53f0aa4f886d8d337544af784c6.png" \
+	-i "/home/mb/gits/mkshort/.cache/3f8b97412fcab49d55756a1a7499cf8b415ba6c0d9fbefc5b8692b0f4e537489.png" \
+	-i "/home/mb/gits/mkshort/.cache/5c27a327e3259bef5c6b041fa599920f3fae8633ee438ddef7d3ca930166cf73.png" \
+	-i "/home/mb/gits/mkshort/.cache/e3f9bb9851eb805e7ba3a1cbbd96fcf21ae9f8caba1b168b49310e6b537a96b0.png" \
+	-i "/home/mb/gits/mkshort/.cache/3ff769731dbab97c486431ecf88e2b41190bec481a3ee4e1fa531d26fee365ef.png" \
+	-i "/home/mb/gits/mkshort/.cache/4e882109b94eb4fe10dac69753922045dc82a329c4d0f9136538e258389858d3.png" \
+	-i "/home/mb/gits/mkshort/.cache/0616f5379b27407cdb10fc28b6764b7e1f895d06a616fd788b58bae027e4c57c.png" \
 	-r 30 -t 17.30 -loop 1 -i "virgin-of-the-rocks-london.jpg" \
-	 -i "/home/mb/gits/mkshort/.cache/3d426114dc910999e9f5c9583b24444111dffda5ad5acf4e711d7079c83b4008.png" \
-	 -i "/home/mb/gits/mkshort/.cache/87f8eab5e96fcfde670fb93dfaa0649ba964286be63314c8fec524d1eafc184b.png" \
-	 -i "/home/mb/gits/mkshort/.cache/7f55fb922a6b776d224d061a9fcf1c725833680970f7d652965c735fbdde4342.png" \
+	-i "/home/mb/gits/mkshort/.cache/10df258c045e90a9bdba6ba868ea3df937e9f180d022e23d7aed79bebb00d923.png" \
+	-i "/home/mb/gits/mkshort/.cache/7999bf9bdfe9f9715ee6d1e5cff7a02f137224dcf6a86cf3ef483be89fafa4cd.png" \
+	-i "/home/mb/gits/mkshort/.cache/2acc744f08511fb3ae5dfc48bb97c5fd068479a83d92d4ac1273df60262ca3c3.png" \
+	-i "BMC19T1VivaldiSeasonsSpring.mp3" \
 	-filter_complex "
 		[0:v] scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black [in0];
 		[9:v] scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black [in1];
@@ -28,6 +29,7 @@ ffmpeg -y \
 		[in1,1] [11:v] overlay=x=(W-w)/2:y=(H-h)/2:enable='between(t,8.10,10.60)' [in1,3];
 		[in1,3] [12:v] overlay=x=(W-w)/2:y=(H-h)/2:enable='between(t,11.30,14.30)' [in1,4];
 
-		[in0,9] [in1,4] concat=n=2:v=1:a=0:unsafe=1 [v]
+		[in0,9] [in1,4] concat=n=2:v=1:a=0:unsafe=1 [v];
+		[13:a] afade=type=in:start_time=0:duration=4.00, afade=type=out:start_time=50.10:duration=4.00 [a]
 	" \
-	-pix_fmt yuv420p -r 30 -movflags faststart -map "[v]" "/dev/stdout"
+	-pix_fmt yuv420p -r 30 -movflags faststart -map "[v]" -map "[a]" -c:a aac -shortest "/dev/stdout"

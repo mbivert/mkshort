@@ -4,6 +4,9 @@ a diaporama of images with overlayed text, via [ffmpeg(1)][ffmpeg-doc].
 The input is a text file like this one:
 
 ```
+# Specify an audio file with fade-in/out of 4sec both
+@4 4 BMC19T1VivaldiSeasonsSpring.mp3
+
 :virgin-of-the-rocks-paris.jpg
 0.7 3.5
 	Here is what seems \\
@@ -39,17 +42,9 @@ the ``.mp4``:
 $ ffmpeg -y -i virgin-of-the-rocks.mp4 virgin-of-the-rocks-audio.gif
 ```
 
-A video with sound is available
+A video with [sound](http://www.baroquemusic.org/19Web.html) is available
 [here](https://www.ganjingworld.com/shorts/1gemffsenl01fJ8I4DxARv8qi1k81c)
-or [here](https://youtube.com/shorts/d4iW-_-ETb4);
-the [audio](http://www.baroquemusic.org/19Web.html) has been
-manually added with:
-```
-$ ffmpeg -y \
-	-i virgin-of-the-rocks.mp4 \
-	-i $MUSIC/baroquemusic.com/BMC19T1VivaldiSeasonsSpring.mp3 \
-	-map 0:v -map 1:a -c:v copy -shortest virgin-of-the-rocks-audio.mp4
-```
+or [here](https://youtube.com/shorts/d4iW-_-ETb4).
 
 While [ffmpeg(1)][ffmpeg-doc] provides a text overlay filter, it
 can be limited. Instead, we're using LaTeX (LuaLaTeX) to provide

@@ -55,6 +55,7 @@ type State struct {
 
 	// "Internal" stuff (.short file format)
 	imgPrefix   string
+	audioPrefix string
 	headerSep   string
 }
 
@@ -110,6 +111,7 @@ var S State = State{
 	textImgExt  :    ".png",
 
 	imgPrefix   :     ":",
+	audioPrefix :     "@",
 	headerSep   :     " ",
 }
 
@@ -192,11 +194,12 @@ func compileText(raw string, t *Text, S *State) (*Text, error) {
 // string arrays which can later be compiled to a ffmpeg(1)
 // command by ':/^func compile\('.
 func parse(S *State) (
-		[]string, []string, []string, []string, error) {
+		[]string, []string, []string, []string, string, error) {
 
-	// All input files to be fed to ffmpeg via -i.
+	// All image/video input files to be fed to ffmpeg via -i.
 	// They will be stored in the following order:
 	// (indentation is for clarity only)
+	//
 	//	img0
 	//		overlay-img0-0
 	//		overlay-img0-1
@@ -205,7 +208,15 @@ func parse(S *State) (
 	//		overlay-img1-0
 	//		...
 	//	...
+	//  audio
+	//
+	// NOTE: the audio track is first stored in apath: it's added
+	// in last position of ins, at the end of the parsing (if one
+	// has been specified, naturally)
 	ins   := []string{}
+
+	// audio data, if any
+	afadein, afadeout, apath := 0., 0., ""
 
 	// Current image (path); it'll be added to ins
 	// once either we reach EOF or the next image.
@@ -238,6 +249,9 @@ func parse(S *State) (
 
 	// Duration of the current raw text
 	duration := 0.
+
+	// Total duration. Used to cut the audio track (fade-out actually)
+	tduration := 0.
 
 	// End of the previous text (time). This allows
 	// to concatenate text, which is the only tested
@@ -354,7 +368,29 @@ func parse(S *State) (
 	// register a final overlay chain stream to be concatenated
 	addConcat := func(n string) { concats = append(concats, n) }
 
+	// XXX Perhaps we could be more generous with the format
+	addAudio := func(s string) error {
+		xs := strings.SplitN(strings.TrimSpace(s), S.headerSep, 3)
+		if len(xs) != 3 {
+			return fmt.Errorf("Incorrect audio track format: '%s'", s)
+		}
+		var err error
+		afadein,  err = strconv.ParseFloat(xs[0], 64)
+		if err != nil {
+			return err
+		}
+
+		afadeout, err = strconv.ParseFloat(xs[1], 64)
+		if err != nil {
+			return err
+		}
+
+		apath = xs[2]
+		return nil
+	}
+
 	flushImg := func() {
+		tduration += calcDuration()
 		// Register everything. Order matters.
 		addImg()
 		addScale()
@@ -426,7 +462,13 @@ func parse(S *State) (
 		}
 
 		if err := maybeFlushRaw(); err != nil {
-			return []string{}, []string{}, []string{}, []string{}, err
+			return []string{}, []string{}, []string{}, []string{}, "", err
+		}
+
+		// Audio track
+		if strings.HasPrefix(x, S.audioPrefix) {
+			addAudio(strings.TrimPrefix(x, S.audioPrefix))
+			continue
 		}
 
 		// New image
@@ -460,7 +502,7 @@ func parse(S *State) (
 		} else {
 			a, err := strconv.ParseFloat(xs[0], 64)
 			if err != nil {
-				return []string{}, []string{}, []string{}, []string{}, err
+				return []string{}, []string{}, []string{}, []string{}, "", err
 			}
 			start = s + a
 		}
@@ -474,24 +516,36 @@ func parse(S *State) (
 		} else {
 			a, err := strconv.ParseFloat(xs[1], 64)
 			if err != nil {
-				return []string{}, []string{}, []string{}, []string{}, err
+				return []string{}, []string{}, []string{}, []string{}, "", err
 			}
 			duration = a
 		}
 	}
 
 	if err := maybeFlushRaw(); err != nil {
-		return []string{}, []string{}, []string{}, []string{}, err
+		return []string{}, []string{}, []string{}, []string{}, "", err
 	}
 	maybeFlushImg()
 
-	return ins, scales, overs, concats, s.Err()
+	audio := ""
+	if apath != "" {
+		audio = fmt.Sprintf(
+			"[%d:a] afade=type=in:start_time=0:duration=%.2f, "+
+			"afade=type=out:start_time=%.2f:duration=%.2f [a]",
+			addBasicInput(apath),
+			afadein,
+			tduration-afadeout,
+			afadeout,
+		)
+	}
+
+	return ins, scales, overs, concats, audio, s.Err()
 }
 
 // Compile a parsed .short file to a ffmpeg(1) command.
 // The compiled .short is represented by the ins/scales/overs/concats
 // arrays.
-func compile(ins, scales, overs, concats []string, S *State) string {
+func compile(ins, scales, overs, concats []string, audio string, S *State) string {
 	cmd := "ffmpeg "
 	if S.overwrite {
 		cmd = cmd + "-y "
@@ -520,6 +574,9 @@ func compile(ins, scales, overs, concats []string, S *State) string {
 			cmd += x + " "
 		}
 		cmd += fmt.Sprintf("concat=n=%d:v=1:a=0:unsafe=1 [v]", len(concats))
+		if audio != "" {
+			cmd += fmt.Sprintf(";\n\n\t\t%s", audio)
+		}
 	}
 	cmd += "\n\t\" \\\n\t"
 
@@ -533,18 +590,24 @@ func compile(ins, scales, overs, concats []string, S *State) string {
 		cmd += "-movflags faststart "
 	}
 
+	cmd += "-map \"[v]\" "
+
+	if audio != "" {
+		cmd += "-map \"[a]\" -c:a aac -shortest "
+	}
+
 	// XXX what if no output? (can we stdout?)
-	cmd += fmt.Sprintf("-map \"[v]\" \"%s\"", S.output)
+	cmd += fmt.Sprintf("\"%s\"", S.output)
 
 	return cmd
 }
 
 func parseAndCompile(S *State) (string, error) {
-	ins, scales, overs, concats, err := parse(S)
+	ins, scales, overs, concats, audio, err := parse(S)
 	if err != nil {
 		return "", err
 	}
-	return compile(ins, scales, overs, concats, S), nil
+	return compile(ins, scales, overs, concats, audio, S), nil
 }
 
 func run(scmd string, s *State) error {
