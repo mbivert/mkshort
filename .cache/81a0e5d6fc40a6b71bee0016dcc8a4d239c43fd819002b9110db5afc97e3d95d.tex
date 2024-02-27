@@ -1,0 +1,32 @@
+\documentclass[preview,convert={density=600,outext=.png,command=\unexpanded{ {\convertexe\space -density \density\space\infile\space \ifx\size\empty\else -resize \size\fi\space -quality 90 -trim +repage -background "rgba(50,50,50,0.5)" -bordercolor "rgba(50,50,50,0.5)" -border 25 -flatten \outfile} } }]{standalone}
+% Requires lualatex
+\usepackage{emoji}
+
+\usepackage{xcolor}
+\usepackage{amsmath}
+
+\usepackage{babel}
+\usepackage{graphicx}
+
+% beware of the extra spaces here
+\graphicspath{ {/home/mb/gits/mkshort/} }
+
+\babelprovide{chinese}
+
+% (shell)$ fc-list :lang=zh
+\babelfont[chinese]{rm}[Renderer=Harfbuzz]{HAN NOM A}
+
+\usepackage{tikz} % \pgfsetfillopacity
+
+\newcommand{\cn}[1]{\begin{otherlanguage}{chinese}#1\end{otherlanguage}}
+\newcommand{\cnc}[2]{\pgfsetfillopacity{0.8}\colorbox{gray}{%
+\textcolor{#2}{\pgfsetfillopacity{1}\cn{#1}}}}
+
+\begin{document}
+
+\begin{center}
+\textcolor{white}{
+About this famous \\
+Leonardo painting, \\}
+\end{center}
+\end{document}
