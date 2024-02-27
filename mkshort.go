@@ -723,7 +723,9 @@ func doInit() {
 			S.delimRight,
 		).Parse(S.textTmpl))
 	} else {
-		S.tmpl = template.Must(template.New("").Delims(
+		// XXX why does a template.New("") raises an error about
+		// an empty template upon Execution?
+		S.tmpl = template.Must(template.New(*tmplFn).Delims(
 			S.delimLeft,
 			S.delimRight,
 		).ParseFiles(*tmplFn))
