@@ -483,7 +483,9 @@ func parse(S *State) (
 
 		// Audio track
 		if strings.HasPrefix(x, S.audioPrefix) {
-			addAudio(strings.TrimPrefix(x, S.audioPrefix))
+			if err := addAudio(strings.TrimPrefix(x, S.audioPrefix)); err != nil {
+				return []string{}, []string{}, []string{}, []string{}, "", err
+			}
 			continue
 		}
 
