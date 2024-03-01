@@ -4,8 +4,8 @@ a diaporama of images with overlayed text, via [ffmpeg(1)][ffmpeg-doc].
 The input is a text file like this one:
 
 ```
-# Specify an audio file with fade-in/out of 4sec both
-@4 4 BMC19T1VivaldiSeasonsSpring.mp3
+# Specify an audio file with fade-in/out of 4sec both; skip the first 2sec
+@2 4 4 BMC19T1VivaldiSeasonsSpring.mp3
 
 :virgin-of-the-rocks-paris.jpg
 0.7 3.5

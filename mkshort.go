@@ -232,7 +232,7 @@ func parse(S *State) (
 	ins   := []string{}
 
 	// audio data, if any
-	afadein, afadeout, apath := 0., 0., ""
+	astart, afadein, afadeout, apath := 0., 0., 0., ""
 
 	// Current image (path); it'll be added to ins
 	// once either we reach EOF or the next image.
@@ -384,24 +384,29 @@ func parse(S *State) (
 	// register a final overlay chain stream to be concatenated
 	addConcat := func(n string) { concats = append(concats, n) }
 
-	// XXX Perhaps we could be more generous with the format
+	// XXX Be more generous with the format
 	addAudio := func(s string) error {
-		xs := strings.SplitN(strings.TrimSpace(s), S.headerSep, 3)
-		if len(xs) != 3 {
+		xs := strings.SplitN(strings.TrimSpace(s), S.headerSep, 4)
+		if len(xs) != 4 {
 			return fmt.Errorf("Incorrect audio track format: '%s'", s)
 		}
 		var err error
-		afadein,  err = strconv.ParseFloat(xs[0], 64)
+		astart,  err = strconv.ParseFloat(xs[0], 64)
 		if err != nil {
 			return err
 		}
 
-		afadeout, err = strconv.ParseFloat(xs[1], 64)
+		afadein,  err = strconv.ParseFloat(xs[1], 64)
 		if err != nil {
 			return err
 		}
 
-		apath = xs[2]
+		afadeout, err = strconv.ParseFloat(xs[2], 64)
+		if err != nil {
+			return err
+		}
+
+		apath = xs[3]
 		return nil
 	}
 
@@ -548,9 +553,12 @@ func parse(S *State) (
 	audio := ""
 	if apath != "" {
 		audio = fmt.Sprintf(
-			"[%d:a] afade=type=in:start_time=0:duration=%.2f, "+
+			"[%d:a] atrim=start=%.2f, "+
+			"asetpts=PTS-STARTPTS, "+ // https://stackoverflow.com/a/57980174
+			"afade=type=in:start_time=0:duration=%.2f, "+
 			"afade=type=out:start_time=%.2f:duration=%.2f [a]",
 			addBasicInput(apath),
+			astart,
 			afadein,
 			tduration-afadeout,
 			afadeout,

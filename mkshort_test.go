@@ -790,10 +790,10 @@ func TestParse(t *testing.T) {
 					indent      : "\t",
 					input       : strings.NewReader(`
 # This will be overidden by the next call to @
-@4 42 BMC19T1VivaldiSeasonsSummer.mp3
+@3 4 42 BMC19T1VivaldiSeasonsSummer.mp3
 
-# Setup audio track; fade-in/out of 4sec both
-@4 4 BMC19T1VivaldiSeasonsSpring.mp3
+# Setup audio track; fade-in/out of 4sec both; skip first 5sec
+@5 4 4 BMC19T1VivaldiSeasonsSpring.mp3
 
 # This is a comment; will be ignored
 :virgin-of-the-rocks-paris.jpg
@@ -926,7 +926,7 @@ func TestParse(t *testing.T) {
 					"[in1,3] [12:v] overlay=x=(W-w)/2:y=(H-h)/2:enable='between(t,11.30,14.30)' [in1,4]",
 				},
 				[]string{"[in0,9]","[in1,4]"},
-				"[13:a] afade=type=in:start_time=0:duration=4.00, afade=type=out:start_time=50.10:duration=4.00 [a]",
+				"[13:a] atrim=start=5.00, asetpts=PTS-STARTPTS, afade=type=in:start_time=0:duration=4.00, afade=type=out:start_time=50.10:duration=4.00 [a]",
 				nil,
 			},
 		},
@@ -1061,7 +1061,7 @@ func TestParseAndCompile(t *testing.T) {
 					defaultWait : 0.8,
 					indent      : "\t",
 					input       : strings.NewReader(`
-@4 4 BMC19T1VivaldiSeasonsSpring.mp3
+@0 4 4 BMC19T1VivaldiSeasonsSpring.mp3
 
 :virgin-of-the-rocks-paris.jpg
 0.7 3.5
@@ -1158,7 +1158,7 @@ func TestParseAndCompile(t *testing.T) {
 
 		[in0,9] [in1,4] concat=n=2:v=1:a=0:unsafe=1 [v];
 
-		[13:a] afade=type=in:start_time=0:duration=4.00, afade=type=out:start_time=50.10:duration=4.00 [a]
+		[13:a] atrim=start=0.00, asetpts=PTS-STARTPTS, afade=type=in:start_time=0:duration=4.00, afade=type=out:start_time=50.10:duration=4.00 [a]
 	" \
 	-pix_fmt yuv420p -r 30 -movflags faststart -map "[v]" -map "[a]" -c:a aac -shortest "reel.mp4"`,
 				nil,

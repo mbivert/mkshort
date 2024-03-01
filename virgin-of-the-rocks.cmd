@@ -31,6 +31,6 @@ ffmpeg -y \
 
 		[in0,9] [in1,4] concat=n=2:v=1:a=0:unsafe=1 [v];
 
-		[13:a] afade=type=in:start_time=0:duration=4.00, afade=type=out:start_time=50.10:duration=4.00 [a]
+		[13:a] atrim=start=0.00, asetpts=PTS-STARTPTS, afade=type=in:start_time=0:duration=4.00, afade=type=out:start_time=50.10:duration=4.00 [a]
 	" \
 	-pix_fmt yuv420p -r 30 -movflags faststart -map "[v]" -map "[a]" -c:a aac -shortest "/dev/stdout"
